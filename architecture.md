@@ -73,22 +73,23 @@
 ## 🔧 Technology Stack
 
 ### Backend
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| Bot Framework | Aiogram | 3.x | Telegram bot interactions |
-| API Framework | FastAPI | 0.104+ | REST API server |
-| Language | Python | 3.12 | Core language |
-| Async Runtime | asyncio | stdlib | Async operations |
-| Validation | Pydantic | 2.x | Data validation |
-| ORM | SQLAlchemy | 2.x | Database ORM |
-| Migrations | Alembic | latest | DB schema management |
+| Component       | Technology | Version | Purpose              |
+|-----------------|------------|---------|----------------------|
+| Bot Framework   | Aiogram    | 3.x     | Telegram bot interactions |
+| API Framework   | FastAPI    | 0.104+  | REST API server      |
+| Language        | Python     | 3.12    | Core language        |
+| Package manager | uv         | latest  | Manage project       |
+| Async Runtime   | asyncio    | stdlib  | Async operations     |
+| Validation      | Pydantic   | 2.x     | Data validation      |
+| ORM             | SQLAlchemy | 2.x     | Database ORM         |
+| Migrations      | Alembic    | latest  | DB schema management |
 
 ### Database & Cache
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Primary DB | PostgreSQL 16 | Main data storage |
-| Cache | Redis 7 | Session & query caching |
-| Connection Pool | asyncpg | Async PostgreSQL driver |
+| Component | Technology    | Purpose |
+|-----------|---------------|---------|
+| Primary DB | PostgreSQL 17 | Main data storage |
+| Cache | Redis 8       | Session & query caching |
+| Connection Pool | asyncpg       | Async PostgreSQL driver |
 
 ### Blockchain
 | Component | Technology | Purpose |
@@ -109,14 +110,14 @@
 | Telegram SDK | @twa-dev/sdk | latest | WebApp integration |
 
 ### DevOps
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Containerization | Docker + Compose | Environment isolation |
-| Reverse Proxy | NGINX | Load balancing |
-| CI/CD | GitHub Actions | Automation |
+| Component | Technology           | Purpose |
+|-----------|----------------------|---------|
+| Containerization | Docker + Compose     | Environment isolation |
+| Reverse Proxy | Traefik              | Load balancing |
+| CI/CD | GitHub Actions       | Automation |
 | Monitoring | Prometheus + Grafana | Metrics |
-| Logging | Loguru | Structured logging |
-| Error Tracking | Sentry | Error monitoring |
+| Logging | Loguru               | Structured logging |
+| Error Tracking | Sentry               | Error monitoring |
 
 ---
 
@@ -612,12 +613,12 @@
 ```yaml
 services:
   postgres:
-    image: postgres:16
+    image: postgres:17
     volumes:
       - pg_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
 
   backend:
     build: ./backend

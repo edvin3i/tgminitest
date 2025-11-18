@@ -135,7 +135,7 @@ Need a robust database for storing:
 - Complex relationships between entities
 
 ### Decision
-Use **PostgreSQL 16** as the primary database with **SQLAlchemy 2.0** async ORM.
+Use **PostgreSQL 17** as the primary database with **SQLAlchemy 2.0** async ORM.
 
 ### Consequences
 
@@ -183,7 +183,7 @@ Need fast, temporary storage for:
 - Rate limiting counters
 
 ### Decision
-Use **Redis 7** for all session state and caching needs.
+Use **Redis 8** for all session state and caching needs.
 
 ### Consequences
 
