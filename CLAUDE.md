@@ -6,6 +6,41 @@ This document defines **strict rules, standards, and behavior expectations** for
 
 ---
 
+## 📦 Package Management with uv
+
+This project uses **[uv](https://docs.astral.sh/uv/)** - an extremely fast Python package installer and resolver written in Rust by Astral (the team behind Ruff).
+
+### Why uv?
+- ⚡ **10-100x faster** than pip
+- 🔒 **Better dependency resolution** with proper lock files
+- 🎯 **Modern Python tooling** from the Ruff creators
+- 🚀 **Production-ready** and actively maintained
+
+### Usage
+```bash
+# Install dependencies
+uv pip install -e ".[dev]"
+
+# Add a new package
+uv pip install <package-name>
+
+# Run commands without activating venv
+uv run pytest
+uv run python -m app.bot.main
+
+# Update dependencies
+uv pip install --upgrade -e ".[dev]"
+```
+
+### Important Notes
+- ✅ **DO** use `uv` for all package installations
+- ✅ **DO** update `pyproject.toml` when adding dependencies
+- ✅ **DO** use `uv run` for running commands in CI/CD
+- ❌ **DON'T** use `pip` unless absolutely necessary
+- ❌ **DON'T** commit `requirements.txt` changes (use `pyproject.toml`)
+
+---
+
 ## 🔒 Code Quality Standards
 
 ### ✅ DO
