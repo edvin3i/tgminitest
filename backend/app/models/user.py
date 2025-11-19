@@ -9,7 +9,7 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.quiz import Quiz
-    from app.models.result import MintTransaction, QuizResult
+    from app.models.result import MintTransaction, Payment, QuizResult
 
 
 class User(Base, TimestampMixin):
@@ -35,6 +35,9 @@ class User(Base, TimestampMixin):
     )
     mint_transactions: Mapped[list["MintTransaction"]] = relationship(
         "MintTransaction", back_populates="user", cascade="all, delete-orphan"
+    )
+    payments: Mapped[list["Payment"]] = relationship(
+        "Payment", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

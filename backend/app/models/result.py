@@ -68,18 +68,24 @@ class MintTransaction(Base, TimestampMixin):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    payment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("payments.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     nft_address: Mapped[str | None] = mapped_column(String(255), nullable=True)
     transaction_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    ipfs_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(
         String(50), default="pending", nullable=False
-    )  # pending, processing, completed, failed
+    )  # pending, uploading_image, uploading_metadata, minting, completed, failed
     metadata_uri: Mapped[str | None] = mapped_column(String(512), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retry_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     confirmed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     # Relationships
     result: Mapped["QuizResult"] = relationship("QuizResult", back_populates="mint_transaction")
     user: Mapped["User"] = relationship("User", back_populates="mint_transactions")
+    payment: Mapped["Payment | None"] = relationship("Payment", back_populates="mint_transaction")
 
     def __repr__(self) -> str:
         """String representation of MintTransaction."""
@@ -90,26 +96,73 @@ class MintTransaction(Base, TimestampMixin):
 
 
 class NFTMetadata(Base, TimestampMixin):
-    """NFTMetadata model storing NFT metadata templates for quiz results."""
+    """NFTMetadata model storing NFT metadata for minted quiz results."""
 
     __tablename__ = "nft_metadata"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    quiz_id: Mapped[int] = mapped_column(
-        ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False, index=True
+    result_id: Mapped[int] = mapped_column(
+        ForeignKey("quiz_results.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
-    result_type: Mapped[str] = mapped_column(String(100), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str] = mapped_column(String(512), nullable=False)
-    attributes_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    metadata_url: Mapped[str] = mapped_column(String(512), nullable=False)
+    attributes: Mapped[list] = mapped_column(JSONB, nullable=False)
 
     # Relationships
-    quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="nft_metadata")
+    result: Mapped["QuizResult"] = relationship("QuizResult")
 
     def __repr__(self) -> str:
         """String representation of NFTMetadata."""
         return (
-            f"<NFTMetadata(id={self.id}, quiz_id={self.quiz_id}, "
-            f"result_type={self.result_type}, name={self.name})>"
+            f"<NFTMetadata(id={self.id}, result_id={self.result_id}, name={self.name})>"
+        )
+
+
+class Payment(Base, TimestampMixin):
+    """Payment model tracking Telegram Stars and TON payments for NFT minting."""
+
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    result_id: Mapped[int] = mapped_column(
+        ForeignKey("quiz_results.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)  # In smallest units
+    currency: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )  # STARS, TON, USD
+    status: Mapped[str] = mapped_column(
+        String(50), default="pending", nullable=False
+    )  # pending, paid, failed, refunded
+    provider: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # telegram_stars, ton_connect
+    provider_payment_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    telegram_payment_charge_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+    paid_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="payments")
+    result: Mapped["QuizResult"] = relationship("QuizResult")
+    mint_transaction: Mapped["MintTransaction | None"] = relationship(
+        "MintTransaction",
+        back_populates="payment",
+        uselist=False,
+    )
+
+    def __repr__(self) -> str:
+        """String representation of Payment."""
+        return (
+            f"<Payment(id={self.id}, user_id={self.user_id}, "
+            f"amount={self.amount}, currency={self.currency}, status={self.status})>"
         )

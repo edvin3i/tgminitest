@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
-    from app.models.result import NFTMetadata, QuizResult
+    from app.models.result import QuizResult
     from app.models.user import User
 
 
@@ -39,9 +39,6 @@ class Quiz(Base, TimestampMixin):
     )
     quiz_results: Mapped[list["QuizResult"]] = relationship(
         "QuizResult", back_populates="quiz", cascade="all, delete-orphan"
-    )
-    nft_metadata: Mapped[list["NFTMetadata"]] = relationship(
-        "NFTMetadata", back_populates="quiz", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
