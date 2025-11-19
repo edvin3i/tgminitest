@@ -62,22 +62,21 @@ class StorageService:
             }
 
             # Upload to Pinata
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    f"{self.base_url}/pinning/pinFileToIPFS",
-                    data=form,
-                    headers=headers,
-                ) as response:
-                    if response.status != 200:
-                        error_text = await response.text()
-                        logger.error(f"Pinata upload failed: {error_text}")
-                        raise Exception(f"Failed to upload image: {error_text}")
+            async with aiohttp.ClientSession() as session, session.post(
+                f"{self.base_url}/pinning/pinFileToIPFS",
+                data=form,
+                headers=headers,
+            ) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    logger.error(f"Pinata upload failed: {error_text}")
+                    raise Exception(f"Failed to upload image: {error_text}")
 
-                    result = await response.json()
-                    ipfs_hash = result["IpfsHash"]
+                result = await response.json()
+                ipfs_hash: str = result["IpfsHash"]
 
-                    logger.info(f"Image uploaded to IPFS: {ipfs_hash}")
-                    return ipfs_hash
+                logger.info(f"Image uploaded to IPFS: {ipfs_hash}")
+                return ipfs_hash
 
         except Exception as e:
             logger.exception(f"Error uploading image to IPFS: {e}")
@@ -120,22 +119,21 @@ class StorageService:
             }
 
             # Upload to Pinata
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    f"{self.base_url}/pinning/pinFileToIPFS",
-                    data=form,
-                    headers=headers,
-                ) as response:
-                    if response.status != 200:
-                        error_text = await response.text()
-                        logger.error(f"Pinata JSON upload failed: {error_text}")
-                        raise Exception(f"Failed to upload JSON: {error_text}")
+            async with aiohttp.ClientSession() as session, session.post(
+                f"{self.base_url}/pinning/pinFileToIPFS",
+                data=form,
+                headers=headers,
+            ) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    logger.error(f"Pinata JSON upload failed: {error_text}")
+                    raise Exception(f"Failed to upload JSON: {error_text}")
 
-                    result = await response.json()
-                    ipfs_hash = result["IpfsHash"]
+                result = await response.json()
+                ipfs_hash: str = result["IpfsHash"]
 
-                    logger.info(f"Metadata uploaded to IPFS: {ipfs_hash}")
-                    return ipfs_hash
+                logger.info(f"Metadata uploaded to IPFS: {ipfs_hash}")
+                return ipfs_hash
 
         except Exception as e:
             logger.exception(f"Error uploading JSON to IPFS: {e}")
@@ -170,9 +168,9 @@ class StorageService:
                 # Create white background
                 background = Image.new("RGB", img.size, (255, 255, 255))
                 if img.mode == "P":
-                    img = img.convert("RGBA")
+                    img = img.convert("RGBA")  # type: ignore[assignment]
                 background.paste(img, mask=img.split()[-1] if len(img.split()) > 3 else None)
-                img = background
+                img = background  # type: ignore[assignment]
 
             # Resize if too large (max 1024x1024)
             max_size = (1024, 1024)
@@ -205,15 +203,14 @@ class StorageService:
                 "pinata_secret_api_key": self.secret_key,
             }
 
-            async with aiohttp.ClientSession() as session:
-                async with session.delete(
-                    f"{self.base_url}/pinning/unpin/{ipfs_hash}",
-                    headers=headers,
-                ) as response:
-                    if response.status == 200:
-                        logger.info(f"File unpinned from IPFS: {ipfs_hash}")
-                    else:
-                        logger.warning(f"Failed to unpin file: {ipfs_hash}")
+            async with aiohttp.ClientSession() as session, session.delete(
+                f"{self.base_url}/pinning/unpin/{ipfs_hash}",
+                headers=headers,
+            ) as response:
+                if response.status == 200:
+                    logger.info(f"File unpinned from IPFS: {ipfs_hash}")
+                else:
+                    logger.warning(f"Failed to unpin file: {ipfs_hash}")
 
         except Exception as e:
             logger.error(f"Error unpinning file from IPFS: {e}")

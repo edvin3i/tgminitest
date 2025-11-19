@@ -4,8 +4,7 @@ from typing import Any
 
 from loguru import logger
 from pytonapi import AsyncTonapi
-from pytoniq_core import Address
-from pytoniq_tools import WalletV4R2
+from pytoniq_tools import WalletV4R2  # type: ignore[import-untyped]
 
 from app.config import settings
 
@@ -69,7 +68,8 @@ class WalletService:
             Wallet address (non-bounceable format).
         """
         wallet = await self.get_wallet()
-        return wallet.address.to_str(is_bounceable=False)
+        address: str = wallet.address.to_str(is_bounceable=False)
+        return address
 
     async def get_balance(self) -> float:
         """Get wallet balance in TON.
@@ -87,11 +87,11 @@ class WalletService:
             wallet_address = await self.get_address()
 
             # Get account info from TonAPI
-            account = await self._tonapi.accounts.get_info(wallet_address)
+            account = await self._tonapi.accounts.get_info(wallet_address)  # type: ignore[union-attr]
             balance_nanoton = account.balance
 
-            # Convert nanoton to TON
-            balance_ton = balance_nanoton / 1_000_000_000
+            # Convert nanoton to TON (balance is in nanotons)
+            balance_ton = float(balance_nanoton) / 1_000_000_000  # type: ignore[arg-type]
 
             logger.debug(f"Wallet balance: {balance_ton} TON")
             return balance_ton
@@ -134,7 +134,7 @@ class WalletService:
             Exception: If seqno fetch fails.
         """
         try:
-            wallet = await self.get_wallet()
+            _ = await self.get_wallet()  # Wallet will be used for actual seqno retrieval
             # This will be implemented when we integrate with blockchain
             # For now, return 0 as placeholder
             logger.debug("Getting wallet seqno (placeholder)")
@@ -155,11 +155,11 @@ class WalletService:
                 await self.initialize()
 
             wallet_address = await self.get_address()
-            account = await self._tonapi.accounts.get_info(wallet_address)
+            account = await self._tonapi.accounts.get_info(wallet_address)  # type: ignore[union-attr]
 
             return {
                 "address": wallet_address,
-                "balance": account.balance / 1_000_000_000,  # Convert to TON
+                "balance": float(account.balance) / 1_000_000_000,  # type: ignore[arg-type]
                 "status": account.status,
                 "is_active": account.status == "active",
             }
@@ -203,7 +203,7 @@ class WalletService:
     async def close(self) -> None:
         """Close TON API client connection."""
         if self._tonapi:
-            await self._tonapi.close()
+            await self._tonapi.close()  # type: ignore[attr-defined]
             logger.info("TON API client closed")
 
 

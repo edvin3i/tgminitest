@@ -1,9 +1,10 @@
 """NFT metadata generation service following TON NFT standards."""
 
-from datetime import datetime
+from io import BytesIO
 from typing import Any
 
 from loguru import logger
+from PIL import Image, ImageDraw, ImageFont
 
 from app.models.quiz import Quiz
 from app.models.result import QuizResult
@@ -128,7 +129,7 @@ class MetadataService:
 
         # Validate image URL
         image_url = metadata.get("image", "")
-        if not (image_url.startswith("ipfs://") or image_url.startswith("https://")):
+        if not image_url.startswith(("ipfs://", "https://")):
             logger.error(f"Invalid image URL format: {image_url}")
             return False
 
@@ -162,10 +163,6 @@ class MetadataService:
             This is a placeholder. In production, you should generate
             or fetch actual images based on result type.
         """
-        from io import BytesIO
-
-        from PIL import Image, ImageDraw, ImageFont
-
         try:
             # Create a simple colored image
             colors = {
@@ -186,10 +183,11 @@ class MetadataService:
             text = result_type.upper()
             try:
                 # Try to use a nice font
-                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+                font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+                font = ImageFont.truetype(font_path, 48)
             except Exception:
                 # Fallback to default font
-                font = ImageFont.load_default()
+                font = ImageFont.load_default()  # type: ignore[assignment]
 
             # Center text
             bbox = draw.textbbox((0, 0), text, font=font)
