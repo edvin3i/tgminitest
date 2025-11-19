@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from loguru import logger
 
-from app.bot.handlers import help_handler, quiz, start
+from app.bot.handlers import help_handler, nft, quiz, start
 from app.config import settings
 
 
@@ -43,6 +43,7 @@ async def main() -> None:
     dp.include_router(start.router)
     dp.include_router(help_handler.router)
     dp.include_router(quiz.router)
+    dp.include_router(nft.router)
 
     # Start polling
     try:
