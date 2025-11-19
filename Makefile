@@ -27,6 +27,7 @@ help:
 	@echo "  make migration MSG='message'  Create new migration"
 	@echo "  make migrate          Apply pending migrations"
 	@echo "  make migrate-down     Rollback last migration"
+	@echo "  make seed             Seed database with sample data"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-up        Start PostgreSQL & Redis"
@@ -93,6 +94,10 @@ migrate:
 migrate-down:
 	@echo "⬇️  Rolling back last migration..."
 	cd backend && uv run alembic downgrade -1
+
+seed:
+	@echo "🌱 Seeding database with sample data..."
+	cd backend && uv run python -m app.db.seed
 
 # Docker
 docker-up:
