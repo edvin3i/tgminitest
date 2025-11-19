@@ -1,7 +1,6 @@
 """Pydantic schemas for Quiz API."""
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -10,10 +9,10 @@ from pydantic import BaseModel, Field
 class AnswerCreate(BaseModel):
     """Schema for creating an answer."""
 
-    text: str = Field(..., min_length=1, max_length=512, description="Answer text")
-    result_type: str = Field(..., min_length=1, max_length=100, description="Result type key")
+    text: str = Field(min_length=1, max_length=512, description="Answer text")
+    result_type: str = Field(min_length=1, max_length=100, description="Result type key")
     weight: int = Field(default=1, ge=1, le=10, description="Answer weight (1-10)")
-    order_index: int = Field(..., ge=0, description="Display order")
+    order_index: int = Field(ge=0, description="Display order")
 
 
 class AnswerResponse(BaseModel):
@@ -33,9 +32,9 @@ class AnswerResponse(BaseModel):
 class QuestionCreate(BaseModel):
     """Schema for creating a question."""
 
-    text: str = Field(..., min_length=1, max_length=1000, description="Question text")
-    order_index: int = Field(..., ge=0, description="Display order")
-    answers: List[AnswerCreate] = Field(..., min_items=2, description="Answer options")
+    text: str = Field(min_length=1, max_length=1000, description="Question text")
+    order_index: int = Field(ge=0, description="Display order")
+    answers: list[AnswerCreate] = Field(min_length=2, description="Answer options")
 
 
 class QuestionResponse(BaseModel):
@@ -44,7 +43,7 @@ class QuestionResponse(BaseModel):
     id: int
     text: str
     order_index: int
-    answers: List[AnswerResponse]
+    answers: list[AnswerResponse]
 
     class Config:
         from_attributes = True
@@ -54,10 +53,10 @@ class QuestionResponse(BaseModel):
 class ResultTypeCreate(BaseModel):
     """Schema for creating a result type."""
 
-    type_key: str = Field(..., min_length=1, max_length=100, description="Unique key")
-    title: str = Field(..., min_length=1, max_length=255, description="Display title")
-    description: str = Field(..., min_length=1, description="Result description")
-    image_url: Optional[str] = Field(None, max_length=512, description="Result image URL")
+    type_key: str = Field(min_length=1, max_length=100, description="Unique key")
+    title: str = Field(min_length=1, max_length=255, description="Display title")
+    description: str = Field(min_length=1, description="Result description")
+    image_url: str | None = Field(None, max_length=512, description="Result image URL")
 
 
 class ResultTypeResponse(BaseModel):
@@ -67,7 +66,7 @@ class ResultTypeResponse(BaseModel):
     type_key: str
     title: str
     description: str
-    image_url: Optional[str]
+    image_url: str | None
 
     class Config:
         from_attributes = True
@@ -77,24 +76,24 @@ class ResultTypeResponse(BaseModel):
 class QuizCreate(BaseModel):
     """Schema for creating a quiz."""
 
-    title: str = Field(..., min_length=1, max_length=255, description="Quiz title")
-    description: str = Field(..., min_length=1, description="Quiz description")
-    image_url: Optional[str] = Field(None, max_length=512, description="Quiz image URL")
-    questions: List[QuestionCreate] = Field(
-        ..., min_items=1, description="Quiz questions"
+    title: str = Field(min_length=1, max_length=255, description="Quiz title")
+    description: str = Field(min_length=1, description="Quiz description")
+    image_url: str | None = Field(None, max_length=512, description="Quiz image URL")
+    questions: list[QuestionCreate] = Field(
+        min_length=1, description="Quiz questions"
     )
-    result_types: List[ResultTypeCreate] = Field(
-        ..., min_items=2, description="Possible result types"
+    result_types: list[ResultTypeCreate] = Field(
+        min_length=2, description="Possible result types"
     )
 
 
 class QuizUpdate(BaseModel):
     """Schema for updating a quiz."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, min_length=1)
-    image_url: Optional[str] = Field(None, max_length=512)
-    is_active: Optional[bool] = None
+    title: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = Field(None, min_length=1)
+    image_url: str | None = Field(None, max_length=512)
+    is_active: bool | None = None
 
 
 class QuizListResponse(BaseModel):
@@ -103,7 +102,7 @@ class QuizListResponse(BaseModel):
     id: int
     title: str
     description: str
-    image_url: Optional[str]
+    image_url: str | None
     is_active: bool
     created_at: datetime
     question_count: int = Field(default=0, description="Number of questions")
@@ -118,12 +117,12 @@ class QuizDetailResponse(BaseModel):
     id: int
     title: str
     description: str
-    image_url: Optional[str]
+    image_url: str | None
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    questions: List[QuestionResponse]
-    result_types: List[ResultTypeResponse]
+    questions: list[QuestionResponse]
+    result_types: list[ResultTypeResponse]
 
     class Config:
         from_attributes = True
@@ -132,7 +131,7 @@ class QuizDetailResponse(BaseModel):
 class QuizSubmitRequest(BaseModel):
     """Schema for submitting quiz answers."""
 
-    answer_ids: List[int] = Field(..., min_items=1, description="Selected answer IDs")
+    answer_ids: list[int] = Field(min_length=1, description="Selected answer IDs")
 
 
 class QuizSubmitResponse(BaseModel):
@@ -156,7 +155,7 @@ class QuizResultResponse(BaseModel):
     result_type: str
     score: int
     nft_minted: bool
-    nft_address: Optional[str]
+    nft_address: str | None
     completed_at: datetime
 
     class Config:

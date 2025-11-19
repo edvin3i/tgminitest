@@ -6,14 +6,14 @@ from app.models.result import MintTransaction, NFTMetadata, QuizResult
 from app.models.user import User
 
 __all__ = [
-    "Base",
-    "TimestampMixin",
-    "User",
-    "Quiz",
-    "Question",
     "Answer",
-    "ResultType",
-    "QuizResult",
+    "Base",
     "MintTransaction",
     "NFTMetadata",
+    "Question",
+    "Quiz",
+    "QuizResult",
+    "ResultType",
+    "TimestampMixin",
+    "User",
 ]

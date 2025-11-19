@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.main import app
-from app.models.quiz import Answer, Question, Quiz, ResultType
+from app.models.quiz import Quiz
 from app.models.user import User
 
 

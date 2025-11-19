@@ -1,7 +1,7 @@
 """FastAPI application entry point."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,11 +12,11 @@ from app.db.database import check_db_connection
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager.
 
     Args:
-        app: FastAPI application instance.
+        _app: FastAPI application instance (required by FastAPI signature).
 
     Yields:
         None
@@ -87,6 +87,7 @@ async def health_check() -> dict[str, str]:
 
 
 # Include API routers
-from app.api.v1.router import api_router
+# Import here to avoid circular dependency issues with app instance
+from app.api.v1.router import api_router  # noqa: E402
 
 app.include_router(api_router, prefix="/api/v1")

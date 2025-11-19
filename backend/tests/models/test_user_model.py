@@ -1,6 +1,7 @@
 """Tests for User model."""
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -61,5 +62,5 @@ async def test_user_unique_telegram_id(db_session: AsyncSession) -> None:
     user2 = User(telegram_id=555555555, first_name="User2")
     db_session.add(user2)
 
-    with pytest.raises(Exception):  # Should raise IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()

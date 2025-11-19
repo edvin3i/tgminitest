@@ -1,14 +1,11 @@
 """User API endpoints."""
 
-from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import CurrentUser
 from app.db.database import DBSession
-from app.models.quiz import Quiz
 from app.models.result import QuizResult
 from app.schemas.quiz import QuizResultResponse
 from app.schemas.user import UserResponse, UserStatsResponse
@@ -30,11 +27,11 @@ async def get_current_user_profile(current_user: CurrentUser) -> UserResponse:
     return UserResponse.model_validate(current_user)
 
 
-@router.get("/me/results", response_model=List[QuizResultResponse])
+@router.get("/me/results", response_model=list[QuizResultResponse])
 async def get_my_quiz_results(
     current_user: CurrentUser,
     limit: int = 20,
-) -> List[QuizResultResponse]:
+) -> list[QuizResultResponse]:
     """Get current user's quiz results.
 
     Args:

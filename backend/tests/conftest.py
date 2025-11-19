@@ -6,14 +6,10 @@ from typing import Any
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.config import settings
-from app.db.database import get_db
 from app.models import Base, User
-
 
 # Test database URL
 TEST_DATABASE_URL = (

@@ -1,6 +1,6 @@
 """User model for storing Telegram user information."""
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,13 +27,13 @@ class User(Base, TimestampMixin):
     is_admin: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     # Relationships
-    created_quizzes: Mapped[List["Quiz"]] = relationship(
+    created_quizzes: Mapped[list["Quiz"]] = relationship(
         "Quiz", back_populates="creator", cascade="all, delete-orphan"
     )
-    quiz_results: Mapped[List["QuizResult"]] = relationship(
+    quiz_results: Mapped[list["QuizResult"]] = relationship(
         "QuizResult", back_populates="user", cascade="all, delete-orphan"
     )
-    mint_transactions: Mapped[List["MintTransaction"]] = relationship(
+    mint_transactions: Mapped[list["MintTransaction"]] = relationship(
         "MintTransaction", back_populates="user", cascade="all, delete-orphan"
     )
 

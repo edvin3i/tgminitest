@@ -1,7 +1,7 @@
 """State management service using Redis for quiz sessions."""
 
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from loguru import logger
 from redis import asyncio as aioredis
@@ -20,7 +20,7 @@ class StateService:
     async def connect(self) -> None:
         """Connect to Redis."""
         if self.redis is None:
-            self.redis = await aioredis.from_url(
+            self.redis = await aioredis.from_url(  # type: ignore[no-untyped-call]
                 settings.REDIS_URL,
                 encoding="utf-8",
                 decode_responses=True,
@@ -68,7 +68,7 @@ class StateService:
 
         logger.info(f"Started quiz session for user {user_id}, quiz {quiz_id}")
 
-    async def get_quiz_session(self, user_id: int) -> Dict[str, Any] | None:
+    async def get_quiz_session(self, user_id: int) -> dict[str, Any] | None:
         """Get user's current quiz session.
 
         Args:
@@ -81,10 +81,11 @@ class StateService:
             await self.connect()
 
         key = self._get_quiz_key(user_id)
-        data = await self.redis.get(key)  # type: ignore
+        data = await self.redis.get(key)  # type: ignore[union-attr]
 
         if data:
-            return json.loads(data)
+            result: dict[str, Any] = json.loads(data)
+            return result
         return None
 
     async def save_answer(self, user_id: int, answer_id: int) -> None:
@@ -127,9 +128,10 @@ class StateService:
         if not session:
             raise ValueError(f"No active quiz session for user {user_id}")
 
-        return session["current_question"]
+        current_question: int = session["current_question"]
+        return current_question
 
-    async def get_answers(self, user_id: int) -> List[int]:
+    async def get_answers(self, user_id: int) -> list[int]:
         """Get all answers submitted by user in current session.
 
         Args:
@@ -145,7 +147,8 @@ class StateService:
         if not session:
             raise ValueError(f"No active quiz session for user {user_id}")
 
-        return session["answers"]
+        answers: list[int] = session["answers"]
+        return answers
 
     async def clear_quiz_session(self, user_id: int) -> None:
         """Clear user's quiz session.

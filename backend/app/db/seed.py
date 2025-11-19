@@ -1,7 +1,7 @@
 """Database seed script for sample quiz data."""
 
 import asyncio
-from datetime import datetime, timezone
+from typing import Any
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -184,7 +184,8 @@ async def create_hogwarts_quiz(session: AsyncSession, admin: User) -> None:
         session.add(question)
         await session.flush()
 
-        for idx, a_data in enumerate(q_data["answers"]):
+        a_data: dict[str, Any]
+        for idx, a_data in enumerate(q_data["answers"]):  # type: ignore[arg-type]
             answer = Answer(
                 question_id=question.id,
                 text=a_data["text"],

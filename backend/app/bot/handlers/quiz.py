@@ -53,11 +53,10 @@ async def show_quiz_list(event: Message | CallbackQuery) -> None:
 
         if isinstance(event, Message):
             await event.answer(text, reply_markup=get_quiz_selection_keyboard(quizzes))
-        else:
-            if event.message:
-                await event.message.edit_text(
-                    text, reply_markup=get_quiz_selection_keyboard(quizzes)
-                )
+        elif event.message:
+            await event.message.edit_text(  # type: ignore[union-attr]
+                text, reply_markup=get_quiz_selection_keyboard(quizzes)
+            )
 
     except Exception as e:
         logger.exception(f"Error in show_quiz_list: {e}")
@@ -80,7 +79,7 @@ async def start_quiz(callback: CallbackQuery) -> None:
             return
 
         # Extract quiz_id from callback data
-        quiz_id = int(callback.data.split(":")[1])
+        quiz_id = int(callback.data.split(":")[1])  # type: ignore[union-attr]
 
         # Load quiz from database with all questions and answers
         quiz = await get_quiz_by_id(quiz_id)
@@ -103,7 +102,7 @@ async def start_quiz(callback: CallbackQuery) -> None:
             f"<b>{question.text}</b>"
         )
 
-        await callback.message.edit_text(
+        await callback.message.edit_text(  # type: ignore[union-attr]
             text, reply_markup=get_quiz_answer_keyboard(question.answers, 0)
         )
 
@@ -126,8 +125,7 @@ async def handle_answer(callback: CallbackQuery) -> None:
             return
 
         # Parse callback data: answer:<question_index>:<answer_id>
-        parts = callback.data.split(":")
-        question_index = int(parts[1])
+        parts = callback.data.split(":")  # type: ignore[union-attr]
         answer_id = int(parts[2])
 
         # Get current quiz session
@@ -159,8 +157,11 @@ async def handle_answer(callback: CallbackQuery) -> None:
                 f"<b>{question.text}</b>"
             )
 
-            await callback.message.edit_text(
-                text, reply_markup=get_quiz_answer_keyboard(question.answers, current_question_index)
+            await callback.message.edit_text(  # type: ignore[union-attr]
+                text,
+                reply_markup=get_quiz_answer_keyboard(
+                    question.answers, current_question_index
+                ),
             )
         else:
             # Quiz completed - calculate result
@@ -237,13 +238,13 @@ async def show_result(callback: CallbackQuery) -> None:
                 f"📊 Score: {score} points"
             )
 
-        await callback.message.edit_text(
+        await callback.message.edit_text(  # type: ignore[union-attr]
             text, reply_markup=get_result_keyboard(quiz_result.id, nft_minted=False)
         )
 
     except Exception as e:
         logger.exception(f"Error in show_result: {e}")
         if callback.message:
-            await callback.message.edit_text(
+            await callback.message.edit_text(  # type: ignore[union-attr]
                 "❌ Error calculating result. Please try again later."
             )

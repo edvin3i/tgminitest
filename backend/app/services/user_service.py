@@ -1,7 +1,6 @@
 """User service for managing user operations."""
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import AsyncSessionLocal
 from app.models.user import User

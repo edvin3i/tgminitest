@@ -1,11 +1,9 @@
 """Quiz API endpoints."""
 
-from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from loguru import logger
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import CurrentAdminUser, CurrentUser
 from app.db.database import DBSession
@@ -30,13 +28,13 @@ from app.services.quiz_service import (
 router = APIRouter()
 
 
-@router.get("/", response_model=List[QuizListResponse])
+@router.get("/", response_model=list[QuizListResponse])
 async def list_quizzes(
     db: DBSession,
     skip: int = 0,
     limit: int = 100,
     active_only: bool = True,
-) -> List[QuizListResponse]:
+) -> list[QuizListResponse]:
     """Get list of quizzes.
 
     Args:
@@ -184,7 +182,7 @@ async def create_quiz(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create quiz",
-        )
+        ) from e
 
 
 @router.patch("/{quiz_id}", response_model=QuizDetailResponse)
@@ -321,15 +319,15 @@ async def submit_quiz(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
 
 
-@router.get("/{quiz_id}/results", response_model=List[QuizResultResponse])
+@router.get("/{quiz_id}/results", response_model=list[QuizResultResponse])
 async def get_quiz_results(
     quiz_id: int,
     current_user: CurrentUser,
     limit: int = 10,
-) -> List[QuizResultResponse]:
+) -> list[QuizResultResponse]:
     """Get user's results for a specific quiz.
 
     Args:

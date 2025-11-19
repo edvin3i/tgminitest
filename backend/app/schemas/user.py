@@ -1,7 +1,6 @@
 """Pydantic schemas for User API."""
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -11,9 +10,9 @@ class UserResponse(BaseModel):
 
     id: int
     telegram_id: int
-    username: Optional[str]
+    username: str | None
     first_name: str
-    last_name: Optional[str]
+    last_name: str | None
     is_admin: bool
     created_at: datetime
 
@@ -26,13 +25,13 @@ class UserStatsResponse(BaseModel):
 
     total_quizzes_taken: int
     total_nfts_minted: int
-    recent_results: List["QuizResultResponse"]  # Forward reference
+    recent_results: list["QuizResultResponse"]  # Forward reference
 
     class Config:
         from_attributes = True
 
 
-# Import to resolve forward reference
-from app.schemas.quiz import QuizResultResponse
+# Import to resolve forward reference (must be after class definition)
+from app.schemas.quiz import QuizResultResponse  # noqa: E402
 
 UserStatsResponse.model_rebuild()

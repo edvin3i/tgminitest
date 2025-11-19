@@ -1,6 +1,6 @@
 """Quiz and related models."""
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,19 +28,19 @@ class Quiz(Base, TimestampMixin):
 
     # Relationships
     creator: Mapped["User"] = relationship("User", back_populates="created_quizzes")
-    questions: Mapped[List["Question"]] = relationship(
+    questions: Mapped[list["Question"]] = relationship(
         "Question",
         back_populates="quiz",
         cascade="all, delete-orphan",
         order_by="Question.order_index",
     )
-    result_types: Mapped[List["ResultType"]] = relationship(
+    result_types: Mapped[list["ResultType"]] = relationship(
         "ResultType", back_populates="quiz", cascade="all, delete-orphan"
     )
-    quiz_results: Mapped[List["QuizResult"]] = relationship(
+    quiz_results: Mapped[list["QuizResult"]] = relationship(
         "QuizResult", back_populates="quiz", cascade="all, delete-orphan"
     )
-    nft_metadata: Mapped[List["NFTMetadata"]] = relationship(
+    nft_metadata: Mapped[list["NFTMetadata"]] = relationship(
         "NFTMetadata", back_populates="quiz", cascade="all, delete-orphan"
     )
 
@@ -63,7 +63,7 @@ class Question(Base, TimestampMixin):
 
     # Relationships
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="questions")
-    answers: Mapped[List["Answer"]] = relationship(
+    answers: Mapped[list["Answer"]] = relationship(
         "Answer",
         back_populates="question",
         cascade="all, delete-orphan",

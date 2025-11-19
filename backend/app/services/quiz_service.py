@@ -1,21 +1,18 @@
 """Quiz service for managing quiz operations and result calculation."""
 
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Dict, List
+from datetime import UTC, datetime
 
 from loguru import logger
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db.database import AsyncSessionLocal
 from app.models.quiz import Answer, Question, Quiz, ResultType
 from app.models.result import QuizResult
-from app.models.user import User
 
 
-async def get_active_quizzes() -> List[Quiz]:
+async def get_active_quizzes() -> list[Quiz]:
     """Get all active quizzes.
 
     Returns:
@@ -52,7 +49,7 @@ async def get_quiz_by_id(quiz_id: int) -> Quiz | None:
         return result.scalar_one_or_none()
 
 
-async def calculate_result(quiz: Quiz, answer_ids: List[int]) -> tuple[str, int]:
+async def calculate_result(quiz: Quiz, answer_ids: list[int]) -> tuple[str, int]:
     """Calculate quiz result based on weighted scoring algorithm.
 
     Each answer contributes to one or more result types with different weights.
@@ -76,7 +73,7 @@ async def calculate_result(quiz: Quiz, answer_ids: List[int]) -> tuple[str, int]
         ```
     """
     # Build a map of all valid answers for this quiz
-    answer_map: Dict[int, Answer] = {}
+    answer_map: dict[int, Answer] = {}
     for question in quiz.questions:
         for answer in question.answers:
             answer_map[answer.id] = answer
@@ -87,7 +84,7 @@ async def calculate_result(quiz: Quiz, answer_ids: List[int]) -> tuple[str, int]
         raise ValueError(f"Invalid answer IDs for this quiz: {invalid_ids}")
 
     # Calculate scores for each result type
-    scores: Dict[str, int] = defaultdict(int)
+    scores: dict[str, int] = defaultdict(int)
     for answer_id in answer_ids:
         answer = answer_map[answer_id]
         scores[answer.result_type] += answer.weight
@@ -109,7 +106,7 @@ async def calculate_result(quiz: Quiz, answer_ids: List[int]) -> tuple[str, int]
 async def save_quiz_result(
     user_id: int,
     quiz_id: int,
-    answer_ids: List[int],
+    answer_ids: list[int],
     result_type: str,
     score: int,
 ) -> QuizResult:
@@ -144,7 +141,7 @@ async def save_quiz_result(
             result_type=result_type,
             score=score,
             nft_minted=False,
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
         )
         session.add(quiz_result)
         await session.commit()
@@ -158,7 +155,7 @@ async def save_quiz_result(
         return quiz_result
 
 
-async def get_user_quiz_results(user_id: int, limit: int = 10) -> List[QuizResult]:
+async def get_user_quiz_results(user_id: int, limit: int = 10) -> list[QuizResult]:
     """Get user's quiz results.
 
     Args:

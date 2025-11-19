@@ -1,9 +1,9 @@
 """Quiz result and NFT-related models."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,7 +32,7 @@ class QuizResult(Base, TimestampMixin):
     nft_minted: Mapped[bool] = mapped_column(default=False, nullable=False)
     nft_address: Mapped[str | None] = mapped_column(String(255), nullable=True)
     completed_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc), nullable=False
+        default=lambda: datetime.now(UTC), nullable=False
     )
 
     # Relationships

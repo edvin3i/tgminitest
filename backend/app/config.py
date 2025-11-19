@@ -1,8 +1,7 @@
 """Application configuration using Pydantic Settings."""
 
-from typing import List
 
-from pydantic import Field, PostgresDsn, RedisDsn, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,14 +50,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = Field(default="HS256", description="JWT algorithm")
 
     # CORS
-    CORS_ORIGINS: List[str] = Field(
+    CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://localhost:8000"],
         description="Allowed CORS origins",
     )
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v: str | List[str]) -> List[str]:
+    def parse_cors_origins(cls, v: str | list[str]) -> list[str]:
         """Parse CORS origins from comma-separated string or list."""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",")]
@@ -99,18 +98,18 @@ class Settings(BaseSettings):
     MINT_LIMIT_PER_DAY: int = Field(default=5, description="Max NFT mints per day per user")
 
     # Admin
-    ADMIN_TELEGRAM_IDS: List[int] = Field(
+    ADMIN_TELEGRAM_IDS: list[int] = Field(
         default=[], description="Telegram user IDs with admin access"
     )
 
     @field_validator("ADMIN_TELEGRAM_IDS", mode="before")
     @classmethod
-    def parse_admin_ids(cls, v: str | List[int]) -> List[int]:
+    def parse_admin_ids(cls, v: str | list[int]) -> list[int]:
         """Parse admin IDs from comma-separated string or list."""
         if isinstance(v, str):
             if not v:
                 return []
-            return [int(id.strip()) for id in v.split(",") if id.strip()]
+            return [int(admin_id.strip()) for admin_id in v.split(",") if admin_id.strip()]
         return v
 
     # Monitoring (Optional)

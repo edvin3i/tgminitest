@@ -1,6 +1,6 @@
 """Inline keyboard builders for the bot."""
 
-from typing import Any, List
+from typing import Any
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -26,7 +26,7 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_quiz_selection_keyboard(quizzes: List[Any]) -> InlineKeyboardMarkup:
+def get_quiz_selection_keyboard(quizzes: list[Any]) -> InlineKeyboardMarkup:
     """Build quiz selection keyboard.
 
     Args:
@@ -51,7 +51,7 @@ def get_quiz_selection_keyboard(quizzes: List[Any]) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_quiz_answer_keyboard(answers: List[Any], question_index: int) -> InlineKeyboardMarkup:
+def get_quiz_answer_keyboard(answers: list[Any], question_index: int) -> InlineKeyboardMarkup:
     """Build answer selection keyboard for a quiz question.
 
     Args:

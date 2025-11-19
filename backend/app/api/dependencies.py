@@ -1,8 +1,10 @@
 """API dependencies for authentication and authorization."""
 
-import hmac
 import hashlib
+import hmac
+import json
 from typing import Annotated
+from urllib.parse import unquote
 
 from fastapi import Depends, Header, HTTPException, status
 from loguru import logger
@@ -74,7 +76,7 @@ def validate_telegram_init_data(init_data: str) -> dict[str, str]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid initData format",
-        )
+        ) from e
 
 
 async def get_current_user(
@@ -102,9 +104,6 @@ async def get_current_user(
     params = validate_telegram_init_data(x_telegram_init_data)
 
     # Extract user data (usually in 'user' parameter as JSON)
-    import json
-    from urllib.parse import unquote
-
     user_data_str = params.get("user")
     if not user_data_str:
         raise HTTPException(
@@ -133,11 +132,11 @@ async def get_current_user(
 
         return user
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid user data format",
-        )
+        ) from e
 
 
 async def get_current_admin_user(
