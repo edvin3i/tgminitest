@@ -86,6 +86,7 @@ class Settings(BaseSettings):
     # Payment Configuration (Phase 3)
     STARS_ENABLED: bool = Field(default=True, description="Enable Telegram Stars payments")
     TON_PAYMENT_ENABLED: bool = Field(default=False, description="Enable TON payments")
+    NFT_MINT_PRICE_STARS: int = Field(default=10, description="NFT mint price in Telegram Stars")
     NFT_MINT_PRICE_TON: float = Field(default=0.1, description="NFT mint price in TON")
 
     # Rate Limiting
