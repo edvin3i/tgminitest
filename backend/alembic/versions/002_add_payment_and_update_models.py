@@ -94,6 +94,19 @@ def upgrade() -> None:
     )
 
     # Update nft_metadata table - restructure from quiz-based to result-based
+    # WARNING: This migration will fail if nft_metadata table contains data
+    # Ensure the table is empty before running this migration
+    # Check if table has any rows
+    connection = op.get_bind()
+    result = connection.execute(sa.text("SELECT COUNT(*) FROM nft_metadata"))
+    count = result.scalar()
+    if count and count > 0:
+        raise RuntimeError(
+            f"nft_metadata table contains {count} rows. "
+            "This migration will result in data loss. "
+            "Please backup and manually migrate data before proceeding."
+        )
+
     # First, drop existing foreign key and indexes
     op.drop_index(op.f("ix_nft_metadata_quiz_id"), table_name="nft_metadata")
     op.drop_constraint(

@@ -6,6 +6,7 @@ from typing import Any
 from aiogram.types import LabeledPrice
 from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -96,14 +97,31 @@ class PaymentService:
         )
 
         session.add(payment)
-        await session.flush()
 
-        logger.info(
-            f"Created payment {payment.id} for user {user_id}, "
-            f"result {result_id}, amount {amount} {currency}"
-        )
-
-        return payment
+        try:
+            await session.flush()
+            logger.info(
+                f"Created payment {payment.id} for user {user_id}, "
+                f"result {result_id}, amount {amount} {currency}"
+            )
+            return payment
+        except IntegrityError:
+            # Race condition: another request created payment first
+            # Rollback and query for the existing payment
+            await session.rollback()
+            stmt = select(Payment).where(
+                Payment.result_id == result_id,
+                Payment.status.in_(["pending", "paid"]),
+            )
+            existing_payment = await session.scalar(stmt)
+            if existing_payment:
+                logger.info(
+                    f"Race condition detected: returning existing payment "
+                    f"{existing_payment.id} for result {result_id}"
+                )
+                return existing_payment  # type: ignore[no-any-return]
+            # If we still don't find it, re-raise
+            raise
 
     def create_stars_invoice(
         self,
@@ -236,7 +254,9 @@ class PaymentService:
             payment.status = "paid"
             payment.telegram_payment_charge_id = telegram_payment_charge_id
             payment.provider_payment_id = provider_payment_charge_id
-            payment.paid_at = datetime.now(UTC)
+            # Only set paid_at if not already set (for idempotency)
+            if payment.paid_at is None:
+                payment.paid_at = datetime.now(UTC)
 
             await session.flush()
 

@@ -18,6 +18,43 @@ from app.services.user_service import get_user_by_telegram_id
 router = Router(name="nft")
 
 
+def _format_nft_collection_text(nfts: list[dict]) -> str:
+    """Format NFT collection text.
+
+    Args:
+        nfts: List of NFT dictionaries.
+
+    Returns:
+        Formatted text for display.
+    """
+    if not nfts:
+        return (
+            "🖼️ <b>My NFT Collection</b>\n\n"
+            "You don't have any NFTs yet!\n\n"
+            "Complete quizzes and mint your results as unique NFTs.\n\n"
+            "Try /quiz to get started!"
+        )
+
+    text = f"🖼️ <b>My NFT Collection</b>\n\nYou have {len(nfts)} NFT(s):\n\n"
+
+    for i, nft in enumerate(nfts, 1):
+        metadata = nft.get("metadata")
+        if metadata:
+            text += (
+                f"{i}. <b>{metadata['name']}</b>\n"
+                f"   🔗 <code>{nft['nft_address']}</code>\n"
+                f"   📅 {nft['minted_at'].strftime('%Y-%m-%d %H:%M')}\n\n"
+            )
+        else:
+            text += (
+                f"{i}. NFT #{nft['result_id']}\n"
+                f"   🔗 <code>{nft['nft_address']}</code>\n\n"
+            )
+
+    text += "\n🌐 View on TON Explorer or your TON wallet"
+    return text
+
+
 @router.callback_query(F.data.startswith("mint_nft:"))
 async def initiate_nft_mint(callback: CallbackQuery) -> None:
     """Handle NFT mint button click.
@@ -58,10 +95,14 @@ async def initiate_nft_mint(callback: CallbackQuery) -> None:
                 await db.refresh(quiz_result, ["quiz"])
 
                 # Create Stars invoice
+                description = (
+                    f"Mint your '{quiz_result.result_type}' result as "
+                    "a unique NFT on TON blockchain"
+                )
                 invoice_data = payment_service.create_stars_invoice(
                     payment=payment,
                     title="Mint Quiz Result NFT",
-                    description=f"Mint your '{quiz_result.result_type}' result as a unique NFT on TON blockchain",
+                    description=description,
                 )
 
                 # Send invoice to user
@@ -71,9 +112,14 @@ async def initiate_nft_mint(callback: CallbackQuery) -> None:
                         **invoice_data,
                     )
 
-                    await callback.answer("💰 Payment invoice sent! Complete payment to mint your NFT.")
+                    await callback.answer(
+                        "💰 Payment invoice sent! Complete payment to mint your NFT."
+                    )
                 else:
-                    await callback.answer("Error sending invoice. Please try again.", show_alert=True)
+                    await callback.answer(
+                        "Error sending invoice. Please try again.",
+                        show_alert=True,
+                    )
 
             except ValueError as e:
                 await callback.answer(str(e), show_alert=True)
@@ -202,66 +248,43 @@ async def show_my_nfts(event: Message | CallbackQuery) -> None:
         event: Message or CallbackQuery to show NFTs.
     """
     try:
-        # Extract user and message from event
-        if isinstance(event, Message):
+        # Get user and message based on event type
+        if isinstance(event, CallbackQuery):
             from_user = event.from_user
-            message = event
-        else:  # CallbackQuery
-            from_user = event.from_user
-            message = event.message  # type: ignore[assignment]
+            callback = event
+            msg = event.message
+        else:  # Message
+            from_user = event.from_user  # type: ignore[assignment]
+            msg = event
+            callback = None
 
-        if not from_user or not message:
+        if not from_user or not msg:
             return
 
         # Get user
         user = await get_user_by_telegram_id(from_user.id)
         if not user:
-            if isinstance(event, CallbackQuery):
-                await event.answer("User not found!", show_alert=True)
+            if callback:
+                await callback.answer("User not found!", show_alert=True)
             else:
-                await message.answer("User not found! Please /start the bot first.")
+                await msg.answer("User not found! Please /start the bot first.")
             return
 
-        # Get user's NFTs
+        # Get user's NFTs and format text
         async with AsyncSessionLocal() as db:
             nfts = await nft_service.get_user_nfts(db, user.id)
-
-            if not nfts:
-                text = (
-                    "🖼️ <b>My NFT Collection</b>\n\n"
-                    "You don't have any NFTs yet!\n\n"
-                    "Complete quizzes and mint your results as unique NFTs.\n\n"
-                    "Try /quiz to get started!"
-                )
-            else:
-                text = f"🖼️ <b>My NFT Collection</b>\n\nYou have {len(nfts)} NFT(s):\n\n"
-
-                for i, nft in enumerate(nfts, 1):
-                    metadata = nft.get("metadata")
-                    if metadata:
-                        text += (
-                            f"{i}. <b>{metadata['name']}</b>\n"
-                            f"   🔗 <code>{nft['nft_address']}</code>\n"
-                            f"   📅 {nft['minted_at'].strftime('%Y-%m-%d %H:%M')}\n\n"
-                        )
-                    else:
-                        text += (
-                            f"{i}. NFT #{nft['result_id']}\n"
-                            f"   🔗 <code>{nft['nft_address']}</code>\n\n"
-                        )
-
-                text += "\n🌐 View on TON Explorer or your TON wallet"
+            text = _format_nft_collection_text(nfts)
 
             # Send response
-            if isinstance(event, Message):
-                await message.answer(text)
-            else:  # CallbackQuery
-                await message.edit_text(text)
-                await event.answer()
+            if callback:
+                await msg.edit_text(text)  # type: ignore[union-attr]
+                await callback.answer()
+            else:
+                await msg.answer(text)
 
     except Exception as e:
         logger.exception(f"Error showing NFTs: {e}")
         if isinstance(event, CallbackQuery):
             await event.answer("Error loading NFTs. Please try again.", show_alert=True)
         else:
-            await message.answer("Error loading NFTs. Please try again.")
+            await event.answer("Error loading NFTs. Please try again.")
