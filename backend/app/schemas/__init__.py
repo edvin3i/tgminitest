@@ -1,5 +1,14 @@
 """Pydantic schemas package."""
 
+from app.schemas.nft import (
+    MintConfirmRequest,
+    MintConfirmResponse,
+    NFTMetadataResponse,
+    NFTMintRequest,
+    NFTMintStatusResponse,
+    PaymentInvoiceResponse,
+    UserNFTResponse,
+)
 from app.schemas.quiz import (
     AnswerCreate,
     AnswerResponse,
@@ -20,6 +29,12 @@ from app.schemas.user import UserResponse, UserStatsResponse
 __all__ = [
     "AnswerCreate",
     "AnswerResponse",
+    "MintConfirmRequest",
+    "MintConfirmResponse",
+    "NFTMetadataResponse",
+    "NFTMintRequest",
+    "NFTMintStatusResponse",
+    "PaymentInvoiceResponse",
     "QuestionCreate",
     "QuestionResponse",
     "QuizCreate",
@@ -31,6 +46,7 @@ __all__ = [
     "QuizUpdate",
     "ResultTypeCreate",
     "ResultTypeResponse",
+    "UserNFTResponse",
     "UserResponse",
     "UserStatsResponse",
 ]
