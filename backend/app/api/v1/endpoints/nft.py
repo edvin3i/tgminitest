@@ -42,7 +42,7 @@ async def mint_nft_background(
         logger.exception(f"Background minting failed for result {quiz_result.id}: {e}")
 
 
-@router.post("/mint", response_model=PaymentInvoiceResponse)
+@router.post("/mint", response_model=PaymentInvoiceResponse, status_code=status.HTTP_201_CREATED)
 async def initiate_nft_mint(
     request: NFTMintRequest,
     db: DBSession,

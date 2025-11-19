@@ -4,7 +4,7 @@ from typing import Any
 
 from loguru import logger
 from pytonapi import AsyncTonapi
-from pytoniq_tools import WalletV4R2  # type: ignore[import-untyped]
+from pytoniq_tools.wallet.version.v4 import WalletV4R2  # type: ignore[import-untyped]
 
 from app.config import settings
 

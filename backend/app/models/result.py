@@ -3,8 +3,7 @@
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -26,7 +25,7 @@ class QuizResult(Base, TimestampMixin):
     quiz_id: Mapped[int] = mapped_column(
         ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    answers_data: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    answers_data: Mapped[dict] = mapped_column(JSON, nullable=False)
     result_type: Mapped[str] = mapped_column(String(100), nullable=False)
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     nft_minted: Mapped[bool] = mapped_column(default=False, nullable=False)
@@ -111,7 +110,7 @@ class NFTMetadata(Base, TimestampMixin):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str] = mapped_column(String(512), nullable=False)
     metadata_url: Mapped[str] = mapped_column(String(512), nullable=False)
-    attributes: Mapped[list] = mapped_column(JSONB, nullable=False)
+    attributes: Mapped[list] = mapped_column(JSON, nullable=False)
 
     # Relationships
     result: Mapped["QuizResult"] = relationship("QuizResult")

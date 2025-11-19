@@ -7,14 +7,16 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
-from app.models import Base, User
+# Import all models to register them with Base.metadata
+from app.models.base import Base
+from app.models.quiz import Answer, Question, Quiz, ResultType  # noqa: F401
+from app.models.result import MintTransaction, NFTMetadata, Payment, QuizResult  # noqa: F401
+from app.models.user import User
 
-# Test database URL
-TEST_DATABASE_URL = (
-    "postgresql+asyncpg://quizbot:changeme@localhost:5432/telegram_quiz_test"
-)
+# Test database URL - use in-memory SQLite for fast tests
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest.fixture(scope="session")
@@ -39,7 +41,8 @@ async def test_engine() -> AsyncGenerator[Any, None]:
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
-        poolclass=NullPool,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
 
     # Create all tables
