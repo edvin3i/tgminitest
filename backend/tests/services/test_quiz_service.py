@@ -1,5 +1,8 @@
 """Tests for quiz service."""
 
+from contextlib import asynccontextmanager
+from unittest.mock import patch
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +15,21 @@ from app.services.quiz_service import (
     get_result_type_info,
     save_quiz_result,
 )
+
+
+def mock_async_session_local(db_session: AsyncSession):
+    """Create a mock AsyncSessionLocal that returns test session."""
+    @asynccontextmanager
+    async def _session():
+        yield db_session
+    return _session
+
+
+@pytest.fixture(autouse=True)
+def patch_async_session(db_session: AsyncSession):
+    """Auto-patch AsyncSessionLocal for all tests in this module."""
+    with patch("app.services.quiz_service.AsyncSessionLocal", mock_async_session_local(db_session)):
+        yield
 
 
 @pytest.fixture

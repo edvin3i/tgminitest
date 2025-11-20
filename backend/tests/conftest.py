@@ -125,6 +125,103 @@ async def admin_user(db_session: AsyncSession) -> User:
     return user
 
 
+@pytest_asyncio.fixture
+async def test_quiz(db_session: AsyncSession, test_user: User) -> Quiz:
+    """Create a test quiz with questions and result types.
+
+    Args:
+        db_session: Database session.
+        test_user: Test user who creates the quiz.
+
+    Returns:
+        Quiz: Test quiz instance with questions and result types.
+    """
+    # Create quiz
+    quiz = Quiz(
+        title="Test Quiz",
+        description="Test quiz description",
+        is_active=True,
+        created_by=test_user.id,
+    )
+    db_session.add(quiz)
+    await db_session.flush()
+
+    # Create result types
+    result_types = [
+        ResultType(
+            quiz_id=quiz.id,
+            type_key="type_a",
+            title="Type A",
+            description="Result type A",
+        ),
+        ResultType(
+            quiz_id=quiz.id,
+            type_key="type_b",
+            title="Type B",
+            description="Result type B",
+        ),
+    ]
+    db_session.add_all(result_types)
+    await db_session.flush()
+
+    # Create questions with answers
+    question1 = Question(
+        quiz_id=quiz.id,
+        text="Question 1?",
+        order_index=0,
+    )
+    db_session.add(question1)
+    await db_session.flush()
+
+    answers1 = [
+        Answer(
+            question_id=question1.id,
+            text="Answer 1A",
+            result_type="type_a",
+            weight=1,
+            order_index=0,
+        ),
+        Answer(
+            question_id=question1.id,
+            text="Answer 1B",
+            result_type="type_b",
+            weight=1,
+            order_index=1,
+        ),
+    ]
+    db_session.add_all(answers1)
+
+    question2 = Question(
+        quiz_id=quiz.id,
+        text="Question 2?",
+        order_index=1,
+    )
+    db_session.add(question2)
+    await db_session.flush()
+
+    answers2 = [
+        Answer(
+            question_id=question2.id,
+            text="Answer 2A",
+            result_type="type_a",
+            weight=2,
+            order_index=0,
+        ),
+        Answer(
+            question_id=question2.id,
+            text="Answer 2B",
+            result_type="type_b",
+            weight=2,
+            order_index=1,
+        ),
+    ]
+    db_session.add_all(answers2)
+
+    await db_session.commit()
+    await db_session.refresh(quiz)
+    return quiz
+
+
 @pytest.fixture
 def sample_quiz_data() -> dict[str, Any]:
     """Sample quiz data for testing.
