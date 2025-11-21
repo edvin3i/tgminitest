@@ -1,0 +1,91 @@
+# Production-optimized multi-stage Dockerfile
+# Build stage using uv for fast dependency installation
+FROM python:3.12-slim as builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files first (better caching)
+COPY pyproject.toml .
+COPY .python-version* ./ 2>/dev/null || true
+
+# Install production dependencies only
+RUN uv pip install --system --no-cache \
+    -e ".[prod]" 2>/dev/null || \
+    uv pip install --system --no-cache \
+    fastapi==0.115.6 \
+    uvicorn[standard]==0.34.0 \
+    sqlalchemy[asyncio]==2.0.36 \
+    asyncpg==0.30.0 \
+    alembic==1.14.0 \
+    pydantic-settings==2.7.0 \
+    aiogram==3.15.0 \
+    loguru==0.7.3 \
+    redis==5.2.1 \
+    aiohttp==3.11.11 \
+    pytoniq-tools==0.3.2 \
+    pillow==11.0.0 \
+    qrcode==8.0
+
+# Final production stage
+FROM python:3.12-slim
+
+# Add build arguments for metadata
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=latest
+
+# Add labels
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.revision="${VCS_REF}"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.title="Telegram Quiz NFT Backend"
+LABEL org.opencontainers.image.description="Production backend for Telegram Quiz NFT Platform"
+
+WORKDIR /app
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code
+COPY --chown=1000:1000 app/ ./app/
+COPY --chown=1000:1000 pyproject.toml .
+
+# Create non-root user with specific UID for security
+RUN groupadd -r appgroup -g 1000 && \
+    useradd -r -u 1000 -g appgroup appuser && \
+    chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Set environment variables for production
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+# Production command (no reload)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--log-level", "info"]

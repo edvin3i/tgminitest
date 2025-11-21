@@ -9,6 +9,7 @@ from loguru import logger
 
 from app.config import settings
 from app.db.database import check_db_connection
+from app.monitoring import initialize_monitoring
 
 
 @asynccontextmanager
@@ -23,6 +24,9 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """
     # Startup
     logger.info("Starting Telegram Quiz NFT API...")
+
+    # Initialize monitoring (Sentry, logging)
+    initialize_monitoring()
 
     # Check database connection
     if await check_db_connection():
